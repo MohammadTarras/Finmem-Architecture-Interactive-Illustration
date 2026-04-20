@@ -1,0 +1,501 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:transparent}
+.wrap{padding:8px 0 24px;max-width:900px}
+.tab-bar{display:flex;gap:4px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:20px;overflow-x:auto}
+.tab{padding:8px 16px;font-size:13px;color:var(--color-text-secondary);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .2s,border-color .2s}
+.tab.active{color:var(--color-text-primary);border-bottom:2px solid var(--color-text-primary);font-weight:500}
+.panel{display:none}.panel.active{display:block}
+.section-label{font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.row{display:flex;gap:12px;margin-bottom:12px;align-items:stretch}
+.card{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px 14px;flex:1}
+.card h3{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.card p,.card li{font-size:12px;color:var(--color-text-secondary);line-height:1.55}
+.card ul{padding-left:14px}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;margin-right:4px;margin-bottom:4px}
+.b-short{background:#E1F5EE;color:#085041}.b-mid{background:#E6F1FB;color:#0C447C}.b-long{background:#EEEDFE;color:#3C3489}.b-ref{background:#FAEEDA;color:#633806}
+.b-train{background:#EAF3DE;color:#27500A}.b-test{background:#FAECE7;color:#712B13}
+.prompt-box{background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:8px;padding:12px 14px;font-size:12px;font-family:var(--font-mono);color:var(--color-text-secondary);line-height:1.6;margin-bottom:10px;position:relative}
+.prompt-box .label{position:absolute;top:-9px;left:10px;background:var(--color-background-primary);padding:0 6px;font-size:10px;font-weight:500;color:var(--color-text-tertiary);font-family:var(--font-sans);letter-spacing:.05em;text-transform:uppercase}
+.hl-var{color:#185FA5;font-weight:500}
+.hl-real{color:#3B6D11;font-weight:500}
+.hl-prompt{color:#854F0B;font-weight:500}
+.hl-sys{color:#3C3489;font-weight:500}
+.arrow-row{display:flex;align-items:center;gap:8px;margin:8px 0}
+.arrow-row .arr{flex:1;height:1px;background:var(--color-border-secondary);position:relative}
+.arrow-row .arr::after{content:'';position:absolute;right:-1px;top:-4px;border:4px solid transparent;border-left:6px solid var(--color-border-secondary)}
+.mem-layer{border-left:3px solid;border-radius:0 8px 8px 0;padding:8px 12px;margin-bottom:8px;font-size:12px}
+.ml-s{border-color:#1D9E75;background:#E1F5EE}.ml-m{border-color:#185FA5;background:#E6F1FB}.ml-l{border-color:#534AB7;background:#EEEDFE}.ml-r{border-color:#BA7517;background:#FAEEDA}
+.ml-s .mlt{color:#085041;font-weight:500;font-size:12px}
+.ml-m .mlt{color:#0C447C;font-weight:500;font-size:12px}
+.ml-l .mlt{color:#3C3489;font-weight:500;font-size:12px}
+.ml-r .mlt{color:#633806;font-weight:500;font-size:12px}
+.score-row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.score-chip{font-size:11px;padding:2px 8px;border-radius:4px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary)}
+.formula{font-family:var(--font-mono);font-size:11px;color:var(--color-text-secondary);background:var(--color-background-primary);padding:6px 10px;border-radius:6px;margin:6px 0}
+.real-ex{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:8px;padding:10px 12px;margin-top:8px}
+.real-ex .rex-label{font-size:10px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.real-ex p{font-size:12px;color:var(--color-text-primary);line-height:1.55}
+.real-ex .meta{font-size:11px;color:var(--color-text-tertiary);margin-top:3px}
+.flow-step{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--color-text-primary);color:var(--color-background-primary);font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-body{flex:1}
+.step-body h4{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px}
+.step-body p{font-size:12px;color:var(--color-text-secondary);line-height:1.55}
+.decay-bar-wrap{margin:8px 0}
+.decay-bar-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:3px}
+.decay-bar{height:8px;border-radius:4px;margin-bottom:4px}
+.divider{border:none;border-top:0.5px solid var(--color-border-tertiary);margin:14px 0}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.two-col{grid-template-columns:1fr}.row{flex-direction:column}}
+.perf-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.perf-row:last-child{border-bottom:none}
+.perf-row .model{flex:1;color:var(--color-text-secondary)}
+.perf-row .val{font-family:var(--font-mono);font-size:12px;font-weight:500}
+.val-pos{color:#3B6D11}.val-neg{color:#A32D2D}.val-best{color:#27500A;background:#EAF3DE;padding:2px 6px;border-radius:4px}
+</style>
+<div class="wrap">
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('overview')">Overview</div>
+    <div class="tab" onclick="switchTab('training')">Training phase</div>
+    <div class="tab" onclick="switchTab('testing')">Testing phase</div>
+    <div class="tab" onclick="switchTab('memory')">Memory dynamics</div>
+    <div class="tab" onclick="switchTab('retrieval')">Retrieval & scoring</div>
+    <div class="tab" onclick="switchTab('results')">Results</div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div id="panel-overview" class="panel active">
+    <div class="section-label">System overview — TSLA, 2023</div>
+    <div class="row">
+      <div class="card" style="flex:1.2">
+        <h3>Three core modules</h3>
+        <div style="margin-top:8px">
+          <div class="flow-step">
+            <div class="step-num" style="background:#534AB7">P</div>
+            <div class="step-body">
+              <h4>Profiling</h4>
+              <p>Defines the agent character: professional background (EV/auto sector), and risk inclination (risk-seeking, risk-averse, or self-adaptive). Adapts when cumulative return crosses zero.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-num" style="background:#1D9E75">M</div>
+            <div class="step-body">
+              <h4>Memory</h4>
+              <p>Four-layer database (short, mid, long, reflection). Each news article, filing, and reflection is embedded with OpenAI <code>text-embedding-ada-002</code> (1536-d), scored, and ranked.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-num" style="background:#BA7517">D</div>
+            <div class="step-body">
+              <h4>Decision-making</h4>
+              <p>LLM (GPT-4-Turbo) receives Top-K memories from all layers + momentum signal + risk character → outputs BUY / SELL / HOLD with cited memory IDs.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="flex:0.8">
+        <h3>Memory layers</h3>
+        <div class="mem-layer ml-s" style="margin-top:8px">
+          <div class="mlt">Short-term</div>
+          <div>Daily news articles · decay Q=14 days</div>
+          <div class="score-row"><span class="score-chip">init imp: 50–90</span><span class="score-chip">updated daily</span></div>
+        </div>
+        <div class="mem-layer ml-m">
+          <div class="mlt">Mid-term</div>
+          <div>10-Q quarterly filings · decay Q=90 days</div>
+          <div class="score-row"><span class="score-chip">init imp: 60–80</span><span class="score-chip">updated quarterly</span></div>
+        </div>
+        <div class="mem-layer ml-l">
+          <div class="mlt">Long-term</div>
+          <div>10-K annual filings · decay Q=365 days</div>
+          <div class="score-row"><span class="score-chip">init imp: 80+</span><span class="score-chip">updated yearly</span></div>
+        </div>
+        <div class="mem-layer ml-r">
+          <div class="mlt">Reflection</div>
+          <div>Past reasoning summaries · no decay bounds</div>
+          <div class="score-row"><span class="score-chip">init imp: 80</span><span class="score-chip">cumulative</span></div>
+        </div>
+        <div style="margin-top:10px;font-size:12px;color:var(--color-text-secondary)">From log: 11 news items embedded on 2023-02-10 with vectors of dim 1536. Scores: 50–90 initial importance.</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="card">
+        <h3>Data flow (real run: TSLA 2023-02-10)</h3>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+          <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:6px 10px;font-size:12px;flex:1;min-width:100px">
+            <div style="font-size:10px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.05em">Input</div>
+            <div style="color:var(--color-text-primary);font-weight:500">11 news articles</div>
+            <div style="color:var(--color-text-secondary)">price: $196.89 · diff: −$2.25</div>
+          </div>
+          <div style="display:flex;align-items:center;color:var(--color-text-tertiary);font-size:16px">→</div>
+          <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:6px 10px;font-size:12px;flex:1;min-width:100px">
+            <div style="font-size:10px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.05em">Embed</div>
+            <div style="color:var(--color-text-primary);font-weight:500">11 × 1536-d vectors</div>
+            <div style="color:var(--color-text-secondary)">ada-002 · cosine sim</div>
+          </div>
+          <div style="display:flex;align-items:center;color:var(--color-text-tertiary);font-size:16px">→</div>
+          <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:6px 10px;font-size:12px;flex:1;min-width:100px">
+            <div style="font-size:10px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.05em">Store</div>
+            <div style="color:var(--color-text-primary);font-weight:500">FAISS short-term DB</div>
+            <div style="color:var(--color-text-secondary)">imp: 50–90 · rec: 1.0</div>
+          </div>
+          <div style="display:flex;align-items:center;color:var(--color-text-tertiary);font-size:16px">→</div>
+          <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:6px 10px;font-size:12px;flex:1;min-width:100px">
+            <div style="font-size:10px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.05em">Retrieve</div>
+            <div style="color:var(--color-text-primary);font-weight:500">Top-K by score</div>
+            <div style="color:var(--color-text-secondary)">cosine + importance rank</div>
+          </div>
+          <div style="display:flex;align-items:center;color:var(--color-text-tertiary);font-size:16px">→</div>
+          <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:6px 10px;font-size:12px;flex:1;min-width:100px">
+            <div style="font-size:10px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.05em">LLM</div>
+            <div style="color:var(--color-text-primary);font-weight:500">GPT-4-Turbo</div>
+            <div style="color:var(--color-text-secondary)">BUY / SELL / HOLD</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRAINING -->
+  <div id="panel-training" class="panel">
+    <div class="section-label">Training phase — building memory from labelled price data</div>
+    <div class="row">
+      <div class="card">
+        <h3>What happens each training day</h3>
+        <div style="margin-top:8px">
+          <div class="flow-step">
+            <div class="step-num">1</div>
+            <div class="step-body"><h4>Receive market info</h4><p>Date, price, filings (10-K/10-Q if available), list of news articles, and the <strong>future price diff</strong> (the label). From log: <code>cur_date=2023-02-10 price=$196.89 future_diff=−2.25 news_count=11</code></p></div>
+          </div>
+          <div class="flow-step">
+            <div class="step-num">2</div>
+            <div class="step-body"><h4>Embed & store news</h4><p>Each article is vectorized and inserted into the short-term FAISS index with initial importance drawn from a piecewise distribution (p1=0.8/p2=0.15/p3=0.05 → values 40/60/80, scaled by layer). Log shows IDs 0–10 with scores 50–90.</p></div>
+          </div>
+          <div class="flow-step">
+            <div class="step-num">3</div>
+            <div class="step-body"><h4>Retrieve Top-K memories</h4><p>Query vector = embed("TSLA"). Cosine similarity search returns candidate IDs ranked by composite score. From log: <code>ids=[8,3,1,0,6,7,9,4,10,2]</code> by cosine, then re-ranked → <code>returned=[0,1,2,3,5,8]</code></p></div>
+          </div>
+          <div class="flow-step">
+            <div class="step-num">4</div>
+            <div class="step-body"><h4>Training prompt → LLM</h4><p>The agent is told the future price direction. It must <em>explain why</em> the price moved that way, citing memory IDs. This creates a reasoning summary stored as a reflection.</p></div>
+          </div>
+          <div class="flow-step">
+            <div class="step-num">5</div>
+            <div class="step-body"><h4>Decay + cleanup + jump</h4><p>All stored memories get decayed: recency drops from 1.0 → 0.716 on day 1. Importance also drops (e.g. 70 → 64.4). Memories below thresholds are removed. Important ones "jump" to deeper layers.</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="flex:0.85">
+        <h3>Training prompt template</h3>
+        <div class="prompt-box" style="margin-top:8px">
+          <div class="label">system</div>
+          <span class="hl-sys">You are a helpful assistant only capable of communicating with valid JSON, and no other text.</span>
+        </div>
+        <div class="prompt-box">
+          <div class="label">user — training</div>
+          <span class="hl-prompt">Given the following information, can you explain to me why the financial market fluctuation from current day to the next day behaves like this?</span>
+          <br><span class="hl-prompt">Just summarize the reason of the decision.</span>
+          <br>Your should provide a summary information and the id of the information to support your summary.<br><br>
+          <span class="hl-var">${investment_info}</span><br><br>
+          Output strictly as JSON:<br>
+          <span class="hl-var">{"summary_reason": string, "short_memory_index": number, "middle_memory_index": number, "long_memory_index": number, "reflection_memory_index": number}</span>
+        </div>
+        <div class="real-ex">
+          <div class="rex-label">Real investment_info (2023-02-10, TSLA)</div>
+          <p>The current date is <strong>2023-02-10</strong>. For TSLA, the price difference between the next trading day and the current trading day is: <strong>−2.25</strong></p>
+          <div style="margin-top:6px;font-size:12px;color:var(--color-text-secondary)"><strong>Short-term [IDs 0,1,2,3,5,8]:</strong><br>
+            0. US STOCKS-Nasdaq edges lower, Lyft sinks... TSLA down between 0.6% and 4.4%<br>
+            1. A Bull Market Is Coming: 2 Cathie Wood Stocks to Buy (TSLA)...<br>
+            3. Why Tesla Stock Was Falling on Friday — DOT supercharger requirement...<br>
+            5. Why Tesla Stock Had Another Good Week — up 9% this week...</div>
+          <p class="meta">→ LLM output: "The decline is attributed to broader market pressures (rising Treasury yields) and regulatory concerns (DOT supercharger mandate). Cited ID: 3"</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TESTING -->
+  <div id="panel-testing" class="panel">
+    <div class="section-label">Testing phase — autonomous decision-making without future prices</div>
+    <div class="row">
+      <div class="card">
+        <h3>Testing prompt template</h3>
+        <div class="prompt-box" style="margin-top:8px">
+          <div class="label">user — testing (real, from JSONL trace)</div>
+          <span class="hl-prompt">Given the information, can you make an investment decision? Just summarize the reason of the decision.</span><br>
+          please consider only the available short-term information, the mid-term information, the long-term information, the reflection-term information.<br>
+          please consider the momentum of the historical stock price.<br>
+          <span class="hl-var">When cumulative return is positive or zero, you are a risk-seeking investor.</span><br>
+          please consider how much share of the stock the investor holds now.<br>
+          You should provide exactly one of the following investment decisions: <strong>buy or sell</strong>.<br>
+          When it is really hard to make a buy-or-sell decision, you could go with <strong>hold</strong> option.<br>
+          You also need to provide the <strong>id</strong> of the information to support your decision.<br><br>
+          <span class="hl-var">${investment_info}</span>
+        </div>
+        <div class="real-ex">
+          <div class="rex-label">Real investment_info structure (TSLA, 2023-03-10, top_k=10)</div>
+          <p>The ticker of the stock to be analyzed is <strong>TSLA</strong> and the current date is <strong>2023-03-10</strong></p>
+          <div style="margin-top:6px;font-size:12px;color:var(--color-text-secondary)">
+            <strong>Short-term [10 items]:</strong><br>
+            215. Tesla Vehicle Production Will Likely Soar This Year — stock up 67% YTD...<br>
+            257. Checking In On Tesla Shares — Zacks Rank #3 (Hold)...<br>
+            277. US STOCKS — TSLA fell 6.1% premarket after Musk investor day disappointed...<br>
+            288. TSLA fell 5.9% after Musk EV presentation failed to impress...<br>
+            302. Tesla Cuts Prices Again...
+          </div>
+          <p class="meta">+ Mid-term [10-Q insights] + Long-term [10-K insights] + Reflection [past decisions]</p>
+          <p class="meta">→ Decision: <strong>HOLD</strong> · action_taken: HOLD · decision: −1</p>
+        </div>
+      </div>
+      <div class="card" style="flex:0.85">
+        <h3>What changes in testing</h3>
+        <div style="margin-top:8px">
+          <div class="flow-step">
+            <div class="step-num">1</div>
+            <div class="step-body"><h4>No future price label</h4><p>Instead of a price diff, the agent receives <strong>momentum</strong>: cumulative log return over last M=7 days. This replaces the "ground truth" signal.</p></div>
+          </div>
+          <div class="flow-step">
+            <div class="step-num">2</div>
+            <div class="step-body"><h4>Risk character activates</h4><p>If cumulative return ≥ 0 → risk-seeking mode. If &lt; 0 → risk-averse mode. This is injected into the prompt dynamically.</p></div>
+          </div>
+          <div class="flow-step">
+            <div class="step-num">3</div>
+            <div class="step-body"><h4>All 4 memory layers queried</h4><p>Top-10 from short, mid, long, and reflection layers. Total context can include 40 memory snippets. The LLM must weigh recent news vs quarterly vs annual vs its own past reasoning.</p></div>
+          </div>
+          <div class="flow-step">
+            <div class="step-num">4</div>
+            <div class="step-body"><h4>Output: BUY / SELL / HOLD + IDs</h4><p>Guardrails AI validates the JSON schema. The cited IDs trigger access counter increments, boosting those memories' importance scores by +5.</p></div>
+          </div>
+          <div class="flow-step">
+            <div class="step-num">5</div>
+            <div class="step-body"><h4>Portfolio update + feedback</h4><p>After a 7-day lookback window, the daily PnL accumulates. If cumulative profit is positive, cited memories get importance boosts. Memories slide toward deeper layers via "jump" thresholds.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MEMORY DYNAMICS -->
+  <div id="panel-memory" class="panel">
+    <div class="section-label">Memory dynamics — decay, cleanup, and layer promotion</div>
+    <div class="row">
+      <div class="card">
+        <h3>Scoring formula</h3>
+        <div class="formula">γ = S_recency + S_relevancy + S_importance</div>
+        <div class="two-col" style="margin-top:8px">
+          <div>
+            <div style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px">Recency</div>
+            <div class="formula">S_rec = e^(−δ/Q)</div>
+            <div style="font-size:12px;color:var(--color-text-secondary)">δ = days since creation<br>Q = 14 (short) / 90 (mid) / 365 (long)</div>
+            <div class="real-ex" style="margin-top:6px">
+              <div class="rex-label">From log — day 1 decay</div>
+              <p>recency: 1.0 → <strong>0.7165</strong><br>(δ=1, Q=14: e^−1/14)</p>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px">Importance</div>
+            <div class="formula">S_imp = v × α^δ</div>
+            <div style="font-size:12px;color:var(--color-text-secondary)">v = 40/60/80 (piecewise)<br>α = 0.9 (short) / 0.967 (mid) / 0.988 (long)</div>
+            <div class="real-ex" style="margin-top:6px">
+              <div class="rex-label">From log — day 1 decay</div>
+              <p>imp: 70 → <strong>64.4</strong> (×0.92)<br>imp: 50 → <strong>46.0</strong><br>imp: 90 → <strong>82.8</strong></p>
+            </div>
+          </div>
+        </div>
+        <hr class="divider">
+        <div style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px">Relevancy (cosine sim)</div>
+        <div class="formula">S_rel = (m_E · m_P) / (‖m_E‖ × ‖m_P‖)</div>
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px">m_E = memory embedding · m_P = query embedding ("TSLA" or full character prompt)</div>
+        <div class="real-ex">
+          <div class="rex-label">From log — cosine distances on 2023-02-10</div>
+          <p>Top by similarity: ID 8 (0.867), ID 3 (0.859), ID 1 (0.848), ID 0 (0.825)...<br>After importance re-rank → final order: [0,1,2,3,5,8]</p>
+        </div>
+      </div>
+      <div class="card" style="flex:0.85">
+        <h3>Decay visualization</h3>
+        <div style="margin-top:8px">
+          <div class="decay-bar-label">Short-term memory (Q=14 days) — news</div>
+          <div id="bar-short" class="decay-bar" style="background:linear-gradient(to right,#1D9E75,#E1F5EE);width:100%"></div>
+          <div class="decay-bar-label">Mid-term memory (Q=90 days) — 10-Q</div>
+          <div id="bar-mid" class="decay-bar" style="background:linear-gradient(to right,#185FA5,#E6F1FB);width:100%"></div>
+          <div class="decay-bar-label">Long-term memory (Q=365 days) — 10-K</div>
+          <div id="bar-long" class="decay-bar" style="background:linear-gradient(to right,#534AB7,#EEEDFE);width:100%"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin:10px 0">
+          <span style="font-size:12px;color:var(--color-text-secondary)">Days elapsed:</span>
+          <input type="range" min="0" max="180" value="0" id="day-slider" style="flex:1" oninput="updateDecay(this.value)">
+          <span id="day-out" style="font-size:12px;font-weight:500;min-width:32px">0d</span>
+        </div>
+        <div id="decay-vals" style="font-size:11px;color:var(--color-text-secondary);font-family:var(--font-mono)">
+          Short rec: 1.000 · Mid rec: 1.000 · Long rec: 1.000
+        </div>
+        <hr class="divider">
+        <h3>Cleanup thresholds</h3>
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-top:4px">Memory is <strong>deleted</strong> when:</div>
+        <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+          <div style="background:#FCEBEB;border:0.5px solid #F09595;border-radius:6px;padding:5px 10px;font-size:12px;color:#501313">recency &lt; 0.05</div>
+          <div style="font-size:12px;color:var(--color-text-secondary);display:flex;align-items:center">OR</div>
+          <div style="background:#FCEBEB;border:0.5px solid #F09595;border-radius:6px;padding:5px 10px;font-size:12px;color:#501313">importance &lt; 5</div>
+        </div>
+        <hr class="divider">
+        <h3>Layer promotion (jump)</h3>
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-top:4px">Memories cited during decisions get <code>access_counter += 1</code> → importance <code>+= 5</code>.</div>
+        <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+          <div style="background:#E1F5EE;border:0.5px solid #1D9E75;border-radius:6px;padding:5px 10px;font-size:12px;color:#04342C">Short (imp 0–60) →</div>
+          <div style="background:#E6F1FB;border:0.5px solid #185FA5;border-radius:6px;padding:5px 10px;font-size:12px;color:#042C53">Mid (imp 60–80) →</div>
+          <div style="background:#EEEDFE;border:0.5px solid #534AB7;border-radius:6px;padding:5px 10px;font-size:12px;color:#26215C">Long (imp 80+)</div>
+        </div>
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-top:6px">On jump: recency is <strong>reset to 1.0</strong> to prevent rapid re-decay after promotion.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RETRIEVAL -->
+  <div id="panel-retrieval" class="panel">
+    <div class="section-label">Retrieval mechanism — hybrid cosine + importance ranking</div>
+    <div class="row">
+      <div class="card">
+        <h3>Two-stage retrieval (from log, day 1)</h3>
+        <div class="flow-step" style="margin-top:8px">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>FAISS cosine search</h4>
+            <p>Query = embed("TSLA") → 1536-d vector. FAISS returns top candidates by cosine similarity.</p>
+            <div class="real-ex" style="margin-top:4px">
+              <div class="rex-label">Log output</div>
+              <p>dists=[[0.867, 0.859, 0.848, 0.825, 0.821, 0.821, 0.820, 0.815, 0.809, 0.798]]<br>ids=[[8, 3, 1, 0, 6, 7, 9, 4, 10, 2]]</p>
+            </div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Importance re-ranking</h4>
+            <p>Composite score = recency + relevancy + importance. Candidates are sorted by this compound score. Top-K are selected per layer.</p>
+            <div class="real-ex" style="margin-top:4px">
+              <div class="rex-label">Log output — re-ranked result</div>
+              <p>returned_ids=[0, 1, 2, 3, 5, 8] count=6<br>Note: ID 5 (imp=90) entered top-K despite lower cosine sim (0.798) because high importance boosts its composite score.</p>
+            </div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Composite score formula</h4>
+            <div class="formula" style="margin-top:4px">compound = (importance × recency) + cosine_sim</div>
+            <div style="font-size:12px;color:var(--color-text-secondary);margin-top:4px">Log shows: <code>partial_score = important_score_recency_compound_score + cosine_offset</code><br>ID 5: imp=90, rec=1.0 → compound=1.9 (vs ID 9: imp=50, rec=1.0 → 1.5)</div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="flex:0.85">
+        <h3>Memory records (day 1, TSLA 2023-02-10)</h3>
+        <div style="overflow-x:auto;margin-top:8px">
+          <table style="width:100%;border-collapse:collapse;font-size:11px">
+            <thead>
+              <tr style="border-bottom:0.5px solid var(--color-border-tertiary)">
+                <th style="text-align:left;padding:4px 6px;color:var(--color-text-tertiary);font-weight:400">ID</th>
+                <th style="text-align:left;padding:4px 6px;color:var(--color-text-tertiary);font-weight:400">Snippet</th>
+                <th style="text-align:right;padding:4px 6px;color:var(--color-text-tertiary);font-weight:400">Imp</th>
+                <th style="text-align:right;padding:4px 6px;color:var(--color-text-tertiary);font-weight:400">Compound</th>
+              </tr>
+            </thead>
+            <tbody id="mem-table">
+              <tr style="border-bottom:0.5px solid var(--color-border-tertiary)"><td style="padding:4px 6px;color:var(--color-text-secondary)">5</td><td style="padding:4px 6px;color:var(--color-text-primary);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Why Tesla Stock Had Another Good Week...</td><td style="text-align:right;padding:4px 6px;color:#27500A;font-weight:500">90</td><td style="text-align:right;padding:4px 6px;font-family:var(--font-mono)">1.90</td></tr>
+              <tr style="border-bottom:0.5px solid var(--color-border-tertiary)"><td style="padding:4px 6px;color:var(--color-text-secondary)">0</td><td style="padding:4px 6px;color:var(--color-text-primary);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">US STOCKS—Nasdaq edges lower, Lyft sinks...</td><td style="text-align:right;padding:4px 6px;color:#27500A;font-weight:500">70</td><td style="text-align:right;padding:4px 6px;font-family:var(--font-mono)">1.70</td></tr>
+              <tr style="border-bottom:0.5px solid var(--color-border-tertiary)"><td style="padding:4px 6px;color:var(--color-text-secondary)">1</td><td style="padding:4px 6px;color:var(--color-text-primary);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">A Bull Market Is Coming: 2 Cathie Wood Stocks...</td><td style="text-align:right;padding:4px 6px;color:#27500A;font-weight:500">70</td><td style="text-align:right;padding:4px 6px;font-family:var(--font-mono)">1.70</td></tr>
+              <tr style="border-bottom:0.5px solid var(--color-border-tertiary)"><td style="padding:4px 6px;color:var(--color-text-secondary)">2</td><td style="padding:4px 6px;color:var(--color-text-primary);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">What does Musk lawyer Alex Spiro say...</td><td style="text-align:right;padding:4px 6px;color:#27500A;font-weight:500">70</td><td style="text-align:right;padding:4px 6px;font-family:var(--font-mono)">1.70</td></tr>
+              <tr style="border-bottom:0.5px solid var(--color-border-tertiary)"><td style="padding:4px 6px;color:var(--color-text-secondary)">3</td><td style="padding:4px 6px;color:var(--color-text-primary);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Why Tesla Stock Was Falling on Friday...</td><td style="text-align:right;padding:4px 6px;color:#27500A;font-weight:500">70</td><td style="text-align:right;padding:4px 6px;font-family:var(--font-mono)">1.70</td></tr>
+              <tr style="border-bottom:0.5px solid var(--color-border-tertiary)"><td style="padding:4px 6px;color:var(--color-text-secondary)">8</td><td style="padding:4px 6px;color:var(--color-text-primary);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Pre-Market Most Active TSLA, LYFT...</td><td style="text-align:right;padding:4px 6px;color:var(--color-text-secondary)">50</td><td style="text-align:right;padding:4px 6px;font-family:var(--font-mono)">1.50</td></tr>
+              <tr style="border-bottom:0.5px solid var(--color-border-tertiary);opacity:0.5"><td style="padding:4px 6px;color:var(--color-text-secondary)">4</td><td style="padding:4px 6px;color:var(--color-text-secondary);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">EXCLUSIVE: To tap U.S. gov billions, Tesla...</td><td style="text-align:right;padding:4px 6px;color:var(--color-text-secondary)">50</td><td style="text-align:right;padding:4px 6px;font-family:var(--font-mono);color:var(--color-text-tertiary)">1.50</td></tr>
+            </tbody>
+          </table>
+          <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">IDs 4,6,7,9,10 not returned (lower compound score). ID 5 promoted despite lower cosine rank due to high importance (90).</div>
+        </div>
+        <hr class="divider">
+        <h3>Access counter → importance boost</h3>
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-top:4px">When the LLM cites memory ID 3 in its reasoning, that memory receives <code>access_counter += 1</code> and <code>importance += 5</code>. After enough citations, it crosses the jump threshold and moves to the mid-term layer.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="panel-results" class="panel">
+    <div class="section-label">Performance results — testing period comparison</div>
+    <div class="row">
+      <div class="card">
+        <h3>Cumulative return vs competitors (5 stocks)</h3>
+        <div style="margin-top:10px">
+          <div class="section-label" style="margin-bottom:6px">TSLA</div>
+          <div class="perf-row"><span class="model">FinMem (self-adaptive)</span><span class="val val-best">+61.8%</span></div>
+          <div class="perf-row"><span class="model">DQN</span><span class="val val-pos">+33.3%</span></div>
+          <div class="perf-row"><span class="model">Generative Agents (GA)</span><span class="val val-pos">+13.5%</span></div>
+          <div class="perf-row"><span class="model">A2C</span><span class="val val-pos">+13.7%</span></div>
+          <div class="perf-row"><span class="model">Buy & Hold</span><span class="val val-neg">−18.6%</span></div>
+          <div class="perf-row"><span class="model">FinGPT</span><span class="val val-neg">−7.5%</span></div>
+          <div class="perf-row"><span class="model">PPO</span><span class="val val-pos">+1.3%</span></div>
+        </div>
+        <hr class="divider">
+        <div class="section-label" style="margin-bottom:6px">COIN (Coinbase — limited history)</div>
+        <div class="perf-row"><span class="model">FinMem</span><span class="val val-best">+35.0%</span></div>
+        <div class="perf-row"><span class="model">GA</span><span class="val val-pos">+3.5%</span></div>
+        <div class="perf-row"><span class="model">Buy & Hold</span><span class="val val-neg">−30.0%</span></div>
+        <div class="perf-row"><span class="model">FinGPT</span><span class="val val-neg">−88.8%</span></div>
+        <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">DRL agents excluded — COIN lacked enough history for stable DRL training. FinMem only needed 6 months.</div>
+      </div>
+      <div class="card" style="flex:0.9">
+        <h3>Backbone LLM comparison (TSLA)</h3>
+        <div style="margin-top:10px">
+          <div class="perf-row"><span class="model">GPT-4</span><span class="val val-best">+62.6%</span></div>
+          <div class="perf-row"><span class="model">GPT-4-Turbo</span><span class="val val-pos">+54.7% · Sharpe 2.50</span></div>
+          <div class="perf-row"><span class="model">GPT-3.5-Turbo</span><span class="val val-pos">+16.2%</span></div>
+          <div class="perf-row"><span class="model">davinci-003</span><span class="val val-pos">+1.6%</span></div>
+          <div class="perf-row"><span class="model">Llama2-70b-chat</span><span class="val val-neg">−52.7%</span></div>
+        </div>
+        <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">Llama2 suffered from shorter context window — forced to truncate memory snippets. davinci-003 defaulted to HOLD during volatility.</div>
+        <hr class="divider">
+        <h3>Risk profile comparison (TSLA)</h3>
+        <div style="margin-top:8px">
+          <div class="perf-row"><span class="model">Self-adaptive</span><span class="val val-best">+54.7% · Sharpe 2.50</span></div>
+          <div class="perf-row"><span class="model">Risk-averse</span><span class="val val-neg">−12.5%</span></div>
+          <div class="perf-row"><span class="model">Risk-seeking</span><span class="val val-neg">−19.4%</span></div>
+        </div>
+        <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">Self-adaptive wins because it can switch from aggressive (bullish markets) to conservative (downturns) dynamically based on 3-day cumulative return.</div>
+        <hr class="divider">
+        <h3>Working memory (Top-K) comparison</h3>
+        <div style="margin-top:8px">
+          <div class="perf-row"><span class="model">Top-10</span><span class="val val-best">+79.4% · Sharpe 2.75</span></div>
+          <div class="perf-row"><span class="model">Top-5</span><span class="val val-pos">+54.7% · lowest volatility</span></div>
+          <div class="perf-row"><span class="model">Top-1</span><span class="val val-pos">+52.1%</span></div>
+          <div class="perf-row"><span class="model">Top-3</span><span class="val val-pos">+29.4%</span></div>
+        </div>
+        <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">Top-5 is optimal for TSLA — best risk-adjusted return. Top-10 has higher return but worse drawdown in stable markets (noise dilutes signal).</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  const tabs = document.querySelectorAll('.tab');
+  const map = ['overview','training','testing','memory','retrieval','results'];
+  tabs[map.indexOf(id)].classList.add('active');
+  document.getElementById('panel-'+id).classList.add('active');
+}
+
+function updateDecay(d){
+  d = parseInt(d);
+  document.getElementById('day-out').textContent = d+'d';
+  const rs = Math.exp(-d/14);
+  const rm = Math.exp(-d/90);
+  const rl = Math.exp(-d/365);
+  const pct = v => Math.max(0, Math.round(v*100));
+  document.getElementById('bar-short').style.background = `linear-gradient(to right, #1D9E75 ${pct(rs)}%, #E1F5EE ${pct(rs)}%)`;
+  document.getElementById('bar-mid').style.background = `linear-gradient(to right, #185FA5 ${pct(rm)}%, #E6F1FB ${pct(rm)}%)`;
+  document.getElementById('bar-long').style.background = `linear-gradient(to right, #534AB7 ${pct(rl)}%, #EEEDFE ${pct(rl)}%)`;
+  document.getElementById('decay-vals').textContent = `Short rec: ${rs.toFixed(3)} · Mid rec: ${rm.toFixed(3)} · Long rec: ${rl.toFixed(3)}`;
+}
+</script>
